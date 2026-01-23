@@ -13,38 +13,28 @@
 
 <style>
 :root{ --neon:#ffaa00; }
-body{ margin:0; background:black; color:var(--neon); font-family:'Roboto', sans-serif; display:flex; flex-direction:column; height:100vh; }
-
-.top{
-  display:flex;
-  justify-content:center;
-  padding:20px;
-}
-.top > div{
+body{
+  margin:0;
+  background:black;
+  color:var(--neon);
+  font-family:'Roboto', sans-serif;
   display:flex;
   flex-direction:column;
-  align-items:center;
-  gap:6px;
-  text-align:center;
+  height:100vh;
 }
-
+.top{ display:flex; justify-content:center; padding:20px; }
+.top > div{ display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; }
 #clock{ font-size:24px; font-family:'Orbitron', monospace; }
-
 .oil-box{ display:flex; align-items:center; gap:8px; font-size:15px; }
 .oil-info{ font-size:12px; }
 
-.center{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-}
+.center{ flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; }
 .center-label{ font-size:4vw; }
 .center-value{ font-family:'Orbitron', monospace; font-size:16vw; line-height:1; }
 
 .bottom{ display:flex; justify-content:space-around; font-size:20px; margin-bottom:10px; }
 .controls{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:20px; }
+
 button,input{
   background:black;
   color:var(--neon);
@@ -120,16 +110,27 @@ setInterval(()=>{
     new Date().toLocaleTimeString('pt-BR');
 },1000);
 
-/* ODOMETRO */
-let totalKm = Number(localStorage.getItem('totalKm')) || 1522;
-localStorage.setItem('totalKm', totalKm);
+/* ================= ODOMETRO (CORRIGIDO) ================= */
+let totalKmStored = localStorage.getItem('totalKm');
+let totalKm;
+
+if (totalKmStored === null) {
+  totalKm = 1522; // valor inicial SOMENTE na primeira vez
+  localStorage.setItem('totalKm', totalKm);
+} else {
+  totalKm = Number(totalKmStored);
+}
 
 function atualizarOdometro(){
   document.getElementById('totalKmCenter').textContent = totalKm.toFixed(1);
 }
 atualizarOdometro();
 
-/* TEMPO */
+window.addEventListener('beforeunload', ()=>{
+  localStorage.setItem('totalKm', totalKm);
+});
+
+/* ================= TEMPO ================= */
 let sec = 0;
 let timer = null;
 function start(){
@@ -146,21 +147,21 @@ function stop(){
   timer = null;
 }
 
-/* KM MANUAL */
+/* ================= KM MANUAL ================= */
 function addManualKm(){
   const v = parseFloat(document.getElementById('manualKm').value);
-  if(isNaN(v) || v<=0) return;
+  if(isNaN(v) || v <= 0) return;
   totalKm += v;
   localStorage.setItem('totalKm', totalKm);
   atualizarOdometro();
-  document.getElementById('manualKm').value='';
+  document.getElementById('manualKm').value = '';
   updateOil();
 }
 
-/* ÓLEO */
+/* ================= ÓLEO ================= */
 const OIL_LIMIT = 1500;
-
 let oilBaseKm = Number(localStorage.getItem('oilBaseKm'));
+
 if(!oilBaseKm){
   oilBaseKm = totalKm;
   localStorage.setItem('oilBaseKm', oilBaseKm);
@@ -190,7 +191,7 @@ function updateOil(){
 }
 updateOil();
 
-/* REGISTRAR TROCA */
+/* ================= TROCA DE ÓLEO ================= */
 function resetOil(){
   oilBaseKm = totalKm;
   localStorage.setItem('oilBaseKm', oilBaseKm);
@@ -198,7 +199,7 @@ function resetOil(){
   alert('Troca de óleo registrada');
 }
 
-/* AJUSTE MANUAL */
+/* ================= AJUSTE MANUAL ================= */
 function ajustarOdometro(){
   const novo = prompt('Digite o novo valor do odômetro (km):', totalKm.toFixed(1));
   if(novo === null) return;
@@ -215,4 +216,4 @@ function ajustarOdometro(){
 </script>
 
 </body>
-  </html>
+</html>

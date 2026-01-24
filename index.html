@@ -110,25 +110,15 @@ setInterval(()=>{
     new Date().toLocaleTimeString('pt-BR');
 },1000);
 
-/* ================= ODOMETRO (CORRIGIDO) ================= */
+/* ================= ODOMETRO ================= */
 let totalKmStored = localStorage.getItem('totalKm');
-let totalKm;
-
-if (totalKmStored === null) {
-  totalKm = 1522; // valor inicial SOMENTE na primeira vez
-  localStorage.setItem('totalKm', totalKm);
-} else {
-  totalKm = Number(totalKmStored);
-}
+let totalKm = totalKmStored === null ? 1522 : Number(totalKmStored);
+localStorage.setItem('totalKm', totalKm);
 
 function atualizarOdometro(){
   document.getElementById('totalKmCenter').textContent = totalKm.toFixed(1);
 }
 atualizarOdometro();
-
-window.addEventListener('beforeunload', ()=>{
-  localStorage.setItem('totalKm', totalKm);
-});
 
 /* ================= TEMPO ================= */
 let sec = 0;
@@ -151,7 +141,7 @@ function stop(){
 function addManualKm(){
   const v = parseFloat(document.getElementById('manualKm').value);
   if(isNaN(v) || v <= 0) return;
-  totalKm += v;
+  totalKm = Number((totalKm + v).toFixed(1));
   localStorage.setItem('totalKm', totalKm);
   atualizarOdometro();
   document.getElementById('manualKm').value = '';
@@ -168,25 +158,25 @@ if(!oilBaseKm){
 }
 
 function updateOil(){
-  const proximaTroca = oilBaseKm + OIL_LIMIT;
+  const proximaTroca = Number((oilBaseKm + OIL_LIMIT).toFixed(1));
   const aviso = oilBaseKm + OIL_LIMIT * 0.75;
-  const restante = proximaTroca - totalKm;
+  const restante = Number((proximaTroca - totalKm).toFixed(1));
 
   if(restante <= 0){
     oilIcon.textContent = '🛢️';
     oilStatus.textContent = 'trocar óleo agora';
     oilInfo.textContent =
-      `Era para trocar em: ${proximaTroca} | Atraso: ${Math.abs(restante)} km`;
+      `Era para trocar em: ${proximaTroca.toFixed(1)} | Atraso: ${Math.abs(restante).toFixed(1)} km`;
   } else if(totalKm >= aviso){
     oilIcon.textContent = '⚠️';
     oilStatus.textContent = 'se preparar para troca';
     oilInfo.textContent =
-      `Próxima troca: ${proximaTroca} | Faltam: ${restante} km`;
+      `Próxima troca: ${proximaTroca.toFixed(1)} | Faltam: ${restante.toFixed(1)} km`;
   } else {
     oilIcon.textContent = '🛢️';
     oilStatus.textContent = 'pode rodar tranquilo';
     oilInfo.textContent =
-      `Próxima troca: ${proximaTroca} | Faltam: ${restante} km`;
+      `Próxima troca: ${proximaTroca.toFixed(1)} | Faltam: ${restante.toFixed(1)} km`;
   }
 }
 updateOil();
@@ -208,7 +198,7 @@ function ajustarOdometro(){
     alert('Valor inválido');
     return;
   }
-  totalKm = valor;
+  totalKm = Number(valor.toFixed(1));
   localStorage.setItem('totalKm', totalKm);
   atualizarOdometro();
   updateOil();

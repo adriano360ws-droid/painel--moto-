@@ -5,14 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Digital</title>
 
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon-192.png">
-<meta name="theme-color" content="#000000">
-
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-:root{ --neon:#ffaa00; }
+:root{
+  --neon: #f2f2f2;
+  --neon-top: #00ff6a;
+}
 body{
   margin:0;
   background:black;
@@ -22,41 +21,101 @@ body{
   flex-direction:column;
   height:100vh;
 }
-.top{ display:flex; justify-content:center; padding:20px; }
-.top > div{ display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; }
-#clock{ font-size:24px; font-family:'Orbitron', monospace; }
-.oil-box{ display:flex; align-items:center; gap:8px; font-size:15px; }
-.oil-info{ font-size:12px; }
 
-.center{ flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; }
-.center-label{ font-size:4vw; }
-.center-value{ font-family:'Orbitron', monospace; font-size:16vw; line-height:1; }
+/* TOPO */
+.top{
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  color: var(--neon-top);
+}
+.top-inner{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
 
-.bottom{ display:flex; justify-content:space-around; font-size:20px; margin-bottom:10px; }
-.controls{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:20px; }
+.oil-box{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:16px;
+}
+
+.oil-info{
+  font-size:13px;
+  opacity:.8;
+}
+
+/* CENTRO */
+.center{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+.center-label{
+  font-size:4vw;
+}
+.center-value{
+  font-family:'Orbitron', monospace;
+  font-size:16vw;
+  line-height:1;
+}
+
+/* BASE */
+.bottom{
+  display:flex;
+  justify-content:space-around;
+  margin-bottom:15px;
+}
+.controls{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:20px;
+}
 
 button,input{
   background:black;
   color:var(--neon);
   border:2px solid var(--neon);
   padding:10px 20px;
-  font-size:18px;
+  font-size:16px;
   font-family:'Orbitron', monospace;
 }
+
 input{ width:120px; }
+
+/* ALERTA */
+@keyframes blink{
+  50%{ opacity:.3 }
+}
+.oil-danger circle{
+  animation: blink 1s infinite;
+}
 </style>
 </head>
 
 <body>
 
 <div class="top">
-  <div>
+  <div class="top-inner">
     <div id="clock"></div>
+
     <div class="oil-box">
-      <span id="oilIcon">🟢</span>
+      <span id="oilIcon">
+        <svg width="14" height="14" viewBox="0 0 20 20">
+          <circle cx="10" cy="10" r="8" fill="#00ff6a"/>
+        </svg>
+      </span>
       <span id="oilStatus">pode rodar tranquilo</span>
     </div>
+
     <div class="oil-info" id="oilInfo"></div>
+
     <button onclick="resetOil()">Troquei o óleo</button>
   </div>
 </div>
@@ -87,102 +146,71 @@ input{ width:120px; }
   <button onclick="ajustarOdometro()">AJUSTAR ODÔMETRO</button>
 </div>
 
-<div class="controls">
-  <button onclick="setColor('#ffaa00')">LARANJA</button>
-  <button onclick="setColor('#00ff6a')">VERDE</button>
-  <button onclick="setColor('#f2f2f2')">BRANCO</button>
-</div>
-
 <script>
-/* SERVICE WORKER */
-if ('serviceWorker' in navigator){
-  navigator.serviceWorker.register('service-worker.js');
-}
-
-/* CORES */
-function setColor(c){
-  document.documentElement.style.setProperty('--neon', c);
-}
-
 /* RELÓGIO */
 setInterval(()=>{
-  document.getElementById('clock').textContent =
-    new Date().toLocaleTimeString('pt-BR');
+  clock.textContent = new Date().toLocaleTimeString('pt-BR');
 },1000);
 
-/* ================= ODOMETRO ================= */
-let totalKmStored = localStorage.getItem('totalKm');
-let totalKm = totalKmStored === null ? 1522 : Number(totalKmStored);
-localStorage.setItem('totalKm', totalKm);
-
+/* ODOMETRO */
+let totalKm = Number(localStorage.getItem('totalKm')) || 1522;
 function atualizarOdometro(){
-  document.getElementById('totalKmCenter').textContent = totalKm.toFixed(1);
+  totalKmCenter.textContent = totalKm.toFixed(1);
 }
 atualizarOdometro();
 
-/* ================= TEMPO ================= */
-let sec = 0;
-let timer = null;
+/* TEMPO */
+let sec = 0, timer=null;
 function start(){
   if(timer) return;
-  timer = setInterval(()=>{
+  timer=setInterval(()=>{
     sec++;
-    document.getElementById('moveTime').textContent =
-      String(Math.floor(sec/60)).padStart(2,'0') + ':' +
+    moveTime.textContent =
+      String(Math.floor(sec/60)).padStart(2,'0')+':'+
       String(sec%60).padStart(2,'0');
   },1000);
 }
-function stop(){
-  clearInterval(timer);
-  timer = null;
-}
+function stop(){ clearInterval(timer); timer=null; }
 
-/* ================= KM MANUAL ================= */
+/* KM MANUAL */
 function addManualKm(){
-  const v = parseFloat(document.getElementById('manualKm').value);
-  if(isNaN(v) || v <= 0) return;
-  totalKm = Number((totalKm + v).toFixed(1));
+  const v = parseFloat(manualKm.value);
+  if(isNaN(v)||v<=0) return;
+  totalKm+=v;
   localStorage.setItem('totalKm', totalKm);
   atualizarOdometro();
-  document.getElementById('manualKm').value = '';
+  manualKm.value='';
   updateOil();
 }
 
-/* ================= ÓLEO (🟢🟡🔴) ================= */
+/* ÓLEO */
 const OIL_LIMIT = 1500;
-let oilBaseKm = Number(localStorage.getItem('oilBaseKm'));
-
-if(!oilBaseKm){
-  oilBaseKm = totalKm;
-  localStorage.setItem('oilBaseKm', oilBaseKm);
-}
+let oilBaseKm = Number(localStorage.getItem('oilBaseKm')) || totalKm;
 
 function updateOil(){
-  const proximaTroca = Number((oilBaseKm + OIL_LIMIT).toFixed(1));
-  const restante = Number((proximaTroca - totalKm).toFixed(1));
+  const restante = (oilBaseKm + OIL_LIMIT) - totalKm;
+  const circle = oilIcon.querySelector('circle');
 
-  if (restante <= 0) {
-    oilIcon.textContent = '🔴';
-    oilStatus.textContent = 'troca de óleo atrasada';
-    oilInfo.textContent =
-      `Era para trocar em: ${proximaTroca.toFixed(1)} | Atraso: ${Math.abs(restante).toFixed(1)} km`;
-  } 
-  else if (restante <= 500) {
-    oilIcon.textContent = '🟡';
-    oilStatus.textContent = 'troca de óleo próxima';
-    oilInfo.textContent =
-      `Próxima troca: ${proximaTroca.toFixed(1)} | Faltam: ${restante.toFixed(1)} km`;
-  } 
-  else {
-    oilIcon.textContent = '🟢';
-    oilStatus.textContent = 'pode rodar tranquilo';
-    oilInfo.textContent =
-      `Próxima troca: ${proximaTroca.toFixed(1)} | Faltam: ${restante.toFixed(1)} km`;
+  oilIcon.classList.remove('oil-danger');
+
+  if(restante <= 0){
+    oilStatus.textContent='troca de óleo atrasada';
+    oilInfo.textContent=`Atraso: ${Math.abs(restante).toFixed(1)} km`;
+    circle.setAttribute('fill','#ff3b3b');
+    oilIcon.classList.add('oil-danger');
+  }
+  else if(restante <= 500){
+    oilStatus.textContent='troca de óleo próxima';
+    oilInfo.textContent=`Faltam: ${restante.toFixed(1)} km`;
+    circle.setAttribute('fill','#ffff00');
+  }
+  else{
+    oilStatus.textContent='pode rodar tranquilo';
+    oilInfo.textContent=`Faltam: ${restante.toFixed(1)} km`;
+    circle.setAttribute('fill','#00ff6a');
   }
 }
-updateOil();
 
-/* ================= TROCA DE ÓLEO ================= */
 function resetOil(){
   oilBaseKm = totalKm;
   localStorage.setItem('oilBaseKm', oilBaseKm);
@@ -190,20 +218,16 @@ function resetOil(){
   alert('Troca de óleo registrada');
 }
 
-/* ================= AJUSTE MANUAL ================= */
 function ajustarOdometro(){
-  const novo = prompt('Digite o novo valor do odômetro (km):', totalKm.toFixed(1));
-  if(novo === null) return;
-  const valor = Number(novo.replace(',', '.'));
-  if(isNaN(valor) || valor <= 0){
-    alert('Valor inválido');
-    return;
-  }
-  totalKm = Number(valor.toFixed(1));
+  const n = prompt('Novo valor do odômetro:', totalKm.toFixed(1));
+  if(!n) return;
+  totalKm = Number(n.replace(',','.'));
   localStorage.setItem('totalKm', totalKm);
   atualizarOdometro();
   updateOil();
 }
+
+updateOil();
 </script>
 
 </body>

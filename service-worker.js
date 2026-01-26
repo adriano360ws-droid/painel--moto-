@@ -1,11 +1,10 @@
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v1";
 const CACHE_NAME = `painel-moto-${CACHE_VERSION}`;
 
 const STATIC_CACHE_FILES = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./service-worker.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
@@ -22,7 +21,9 @@ self.addEventListener("activate", event => {
     caches.keys().then(cacheNames =>
       Promise.all(
         cacheNames.map(cache => {
-          if (cache !== CACHE_NAME) return caches.delete(cache);
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
         })
       )
     )
@@ -31,24 +32,9 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
-  const request = event.request;
-  if (
-    request.url.startsWith("http") &&
-    !request.url.includes(self.location.origin)
-  ) {
-    event.respondWith(fetch(request));
-    return;
-  }
-
   event.respondWith(
-    caches.match(request).then(cached => {
-      if (cached) return cached;
-      return fetch(request).then(response =>
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(request, response.clone());
-          return response;
-        })
-      );
+    caches.match(event.request).then(cached => {
+      return cached || fetch(event.request);
     })
   );
 });

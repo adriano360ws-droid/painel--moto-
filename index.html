@@ -6,7 +6,6 @@
 <title>Painel Digital</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000000">
 
 <style>
@@ -90,11 +89,27 @@ input{width:120px;}
 
 <script>
 /* RELÓGIO */
-setInterval(()=>clock.textContent=new Date().toLocaleTimeString('pt-BR'),1000);
+setInterval(()=>{
+ document.getElementById('clock').textContent =
+ new Date().toLocaleTimeString('pt-BR');
+},1000);
 
-/* ODOMETRO */
-let totalKm = Number(localStorage.getItem('totalKm')) || 2105.2;
-totalKmCenter.textContent = totalKm.toFixed(1);
+/* =========================
+   ODOMETRO 100% BLINDADO
+   (IGNORA CACHE BUGADO)
+========================= */
+
+/* KM REAL ATUAL (SEU VALOR CORRETO) */
+const KM_REAL_INICIAL = 2707.7;
+
+/* Força salvar sempre o valor correto na primeira carga */
+if(!localStorage.getItem('totalKmFixado')){
+  localStorage.setItem('totalKm', KM_REAL_INICIAL);
+  localStorage.setItem('totalKmFixado', 'true');
+}
+
+let totalKm = Number(localStorage.getItem('totalKm')) || KM_REAL_INICIAL;
+document.getElementById('totalKmCenter').textContent = totalKm.toFixed(1);
 
 /* TEMPO */
 let sec=0,timer=null;
@@ -102,70 +117,93 @@ function start(){
  if(timer)return;
  timer=setInterval(()=>{
   sec++;
-  moveTime.textContent=
-   String(Math.floor(sec/60)).padStart(2,'0')+':'+
+  document.getElementById('moveTime').textContent =
+   String(Math.floor(sec/60)).padStart(2,'0')+':' +
    String(sec%60).padStart(2,'0');
  },1000);
 }
-function stop(){clearInterval(timer);timer=null;}
+function stop(){
+ clearInterval(timer);
+ timer=null;
+}
 
-/* KM MANUAL */
+/* KM MANUAL (NUNCA PERDE) */
 function addManualKm(){
- const v=parseFloat(manualKm.value);
- if(isNaN(v)||v<=0)return;
- totalKm+=v;
- localStorage.setItem('totalKm',totalKm);
- totalKmCenter.textContent=totalKm.toFixed(1);
- manualKm.value='';
+ const input = document.getElementById('manualKm');
+ const v = parseFloat(input.value);
+ if(isNaN(v) || v <= 0) return;
+
+ totalKm += v;
+ localStorage.setItem('totalKm', totalKm);
+ document.getElementById('totalKmCenter').textContent = totalKm.toFixed(1);
+ input.value='';
  updateOil();
 }
 
-/* ÓLEO */
-const OIL_LIMIT = 1500;
-const DEFAULT_OIL_BASE_KM = 1522;
+/* =========================
+   SISTEMA DE ÓLEO CORRETO
+========================= */
 
-let oilBaseKmStored = localStorage.getItem('oilBaseKm');
-let oilBaseKm = oilBaseKmStored !== null
-  ? Number(oilBaseKmStored)
-  : DEFAULT_OIL_BASE_KM;
+const OIL_LIMIT = 1500;
+
+/* KM REAL quando você trocou o óleo */
+const OIL_BASE_FIXO = 2683.1;
+
+/* Blindagem da base do óleo (sem bug de cache) */
+if(!localStorage.getItem('oilBaseFixado')){
+  localStorage.setItem('oilBaseKm', OIL_BASE_FIXO);
+  localStorage.setItem('oilBaseFixado', 'true');
+}
+
+let oilBaseKm = Number(localStorage.getItem('oilBaseKm')) || OIL_BASE_FIXO;
 
 function updateOil(){
- const restante=(oilBaseKm+OIL_LIMIT)-totalKm;
- const circle=oilIcon.querySelector('circle');
- oilIcon.classList.remove('oil-danger');
+ const restante = (oilBaseKm + OIL_LIMIT) - totalKm;
+ const circle = document.querySelector('#oilIcon circle');
+ const oilStatus = document.getElementById('oilStatus');
+ const oilInfo = document.getElementById('oilInfo');
 
- if(restante<=0){
+ if(restante <= 0){
   oilStatus.textContent='troca de óleo atrasada';
   oilInfo.textContent=`Atraso: ${Math.abs(restante).toFixed(1)} km`;
   circle.setAttribute('fill','#ff3b3b');
-  oilIcon.classList.add('oil-danger');
- }else if(restante<=500){
+  document.getElementById('oilIcon').classList.add('oil-danger');
+ }else if(restante <= 500){
   oilStatus.textContent='troca de óleo próxima';
   oilInfo.textContent=`Faltam: ${restante.toFixed(1)} km`;
   circle.setAttribute('fill','#ffff00');
+  document.getElementById('oilIcon').classList.remove('oil-danger');
  }else{
   oilStatus.textContent='pode rodar tranquilo';
   oilInfo.textContent=`Faltam: ${restante.toFixed(1)} km`;
   circle.setAttribute('fill','#00ff6a');
+  document.getElementById('oilIcon').classList.remove('oil-danger');
  }
 }
 
+/* BOTÃO TROQUEI O ÓLEO (RESET REAL) */
 function resetOil(){
- oilBaseKm=totalKm;
- localStorage.setItem('oilBaseKm',oilBaseKm);
+ oilBaseKm = totalKm;
+ localStorage.setItem('oilBaseKm', oilBaseKm);
+ alert('Óleo trocado! Próxima troca em 1500 km.');
  updateOil();
- alert('Troca de óleo registrada');
 }
 
+/* AJUSTE MANUAL DO ODOMETRO (SEGURANÇA TOTAL) */
 function ajustarOdometro(){
- const n=prompt('Novo valor do odômetro:',totalKm.toFixed(1));
- if(!n)return;
- totalKm=Number(n.replace(',','.'));
- localStorage.setItem('totalKm',totalKm);
- totalKmCenter.textContent=totalKm.toFixed(1);
+ const n = prompt('Novo valor do odômetro:', totalKm.toFixed(1));
+ if(!n) return;
+
+ const valor = Number(n.replace(',','.'));
+ if(isNaN(valor)) return;
+
+ totalKm = valor;
+ localStorage.setItem('totalKm', totalKm);
+ document.getElementById('totalKmCenter').textContent = totalKm.toFixed(1);
  updateOil();
 }
 
+/* Atualiza ao iniciar */
 updateOil();
 </script>
 

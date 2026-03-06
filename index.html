@@ -2,6 +2,8 @@
 <html lang="pt-BR">
 <head>
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -150,14 +152,11 @@ Tempo
 </div>
 
 
-
 <script>
-
 
 /* CONFIGURAÇÃO */
 
 const OIL_LIMIT = 1500;
-
 
 
 /* RELÓGIO */
@@ -168,20 +167,12 @@ new Date().toLocaleTimeString("pt-BR")
 },1000)
 
 
+/* CARREGAR DADOS SALVOS */
 
-/* RESET FORÇADO UMA VEZ */
-
-let totalKm = 3184.1
-let tripA = 0
-let tripB = 0
-let oilBase = 2683.1
-
-localStorage.setItem("totalKm", totalKm)
-localStorage.setItem("tripA", tripA)
-localStorage.setItem("tripB", tripB)
-localStorage.setItem("oilBase", oilBase)
-
-
+let totalKm = Number(localStorage.getItem("totalKm")) || 3184.1
+let tripA = Number(localStorage.getItem("tripA")) || 0
+let tripB = Number(localStorage.getItem("tripB")) || 0
+let oilBase = Number(localStorage.getItem("oilBase")) || 2683.1
 
 
 /* MOSTRAR */
@@ -189,9 +180,7 @@ localStorage.setItem("oilBase", oilBase)
 function updateDisplay(){
 
 document.getElementById("totalKm").innerText = totalKm.toFixed(1)
-
 document.getElementById("tripA").innerText = tripA.toFixed(1)
-
 document.getElementById("tripB").innerText = tripB.toFixed(1)
 
 updateOil()
@@ -199,7 +188,6 @@ updateOil()
 }
 
 updateDisplay()
-
 
 
 /* ADICIONAR KM */
@@ -225,15 +213,12 @@ updateDisplay()
 }
 
 
-
 /* RESET TRIP */
 
 function resetTripA(){
 
 tripA = 0
-
 localStorage.setItem("tripA", tripA)
-
 updateDisplay()
 
 }
@@ -241,13 +226,10 @@ updateDisplay()
 function resetTripB(){
 
 tripB = 0
-
 localStorage.setItem("tripB", tripB)
-
 updateDisplay()
 
 }
-
 
 
 /* ÓLEO */
@@ -259,27 +241,18 @@ let restante = (oilBase + OIL_LIMIT) - totalKm
 let txt=""
 
 if(restante <=0){
-
 txt = "⚠ TROCA DE ÓLEO ATRASADA"
-
 }
-
 else if(restante <=300){
-
 txt = "⚠ Troca de óleo próxima ("+restante.toFixed(0)+" km)"
-
 }
-
 else{
-
 txt = "✔ Óleo OK ("+restante.toFixed(0)+" km restantes)"
-
 }
 
 document.getElementById("oilStatus").innerText = txt
 
 }
-
 
 
 /* TROCA ÓLEO */
@@ -295,7 +268,6 @@ alert("Óleo trocado!")
 updateOil()
 
 }
-
 
 
 /* TEMPO */
@@ -324,15 +296,18 @@ String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")
 function stop(){
 
 clearInterval(timer)
-
 timer=null
 
 }
 
 
+/* REGISTRAR SERVICE WORKER */
+
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("sw.js")
+}
 
 </script>
-
 
 </body>
 </html>

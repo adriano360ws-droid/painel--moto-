@@ -2,12 +2,13 @@
 <html lang="pt-BR">
 <head>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Painel Moto 2.0</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+
+<title>Painel Moto</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
@@ -16,78 +17,62 @@
 body{
 margin:0;
 background:black;
-color:#00ff6a;
+color:white;
 font-family:Orbitron;
 text-align:center;
 }
 
 .top{
 padding:10px;
-font-size:22px; /* Tamanho aumentado */
-color:#ffffff; /* Cor branca */
-font-weight:bold; /* Negrito */
 }
 
-#clock, #oilStatus {
-color:#ffffff;
-font-weight:bold;
+#clock{
+color:#00ff6a;
+font-size:26px;
+margin-bottom:10px;
 }
 
-.speed{
-font-size:90px;
-margin-top:20px;
-}
-
-.label{
-font-size:14px;
-opacity:.7;
+#oilStatus{
+font-size:22px;
+margin-bottom:5px;
 }
 
 .odometro{
-font-size:50px;
+font-size:80px;
 margin-top:10px;
 }
 
-.trips{
-display:flex;
-justify-content:space-around;
+.label{
 margin-top:20px;
-}
-
-.box{
-border:1px solid #00ff6a;
-padding:10px;
-width:40%;
+font-size:18px;
 }
 
 .controls{
-margin-top:20px;
+margin-top:25px;
 }
 
 button{
 background:black;
-color:#00ff6a;
-border:1px solid #00ff6a;
-padding:10px;
+color:white;
+border:1px solid white;
+padding:12px 20px;
 margin:5px;
 font-family:Orbitron;
+font-size:16px;
 }
 
 input{
 background:black;
-color:#00ff6a;
-border:1px solid #00ff6a;
-padding:5px;
-width:80px;
+color:white;
+border:1px solid white;
+padding:10px;
+width:120px;
 text-align:center;
-}
-
-.oil{
-margin-top:15px;
-font-size:14px;
+font-size:16px;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -96,59 +81,25 @@ font-size:14px;
 
 <div id="clock"></div>
 
-<div class="oil" id="oilStatus"></div>
+<div id="oilStatus"></div>
 
 <button onclick="resetOil()">Troquei o óleo</button>
 
 </div>
 
-
-<div class="speed" id="speed">0</div>
-<div class="label">KM/H</div>
-
-
-<div class="odometro" id="totalKm"></div>
 <div class="label">ODÔMETRO TOTAL</div>
 
-
-<div class="trips">
-
-<div class="box">
-Trip A
-<div id="tripA">0</div>
-<button onclick="resetTripA()">Reset</button>
-</div>
-
-<div class="box">
-Trip B
-<div id="tripB">0</div>
-<button onclick="resetTripB()">Reset</button>
-</div>
-
-</div>
-
+<div class="odometro" id="totalKm">0</div>
 
 <div class="controls">
 
-KM corrida
+<input id="kmInput" type="number" step="0.1" placeholder="Ex: 7.4">
 
 <br><br>
 
-<input id="kmInput" type="number" step="0.1">
-
-<button onclick="addKm()">Adicionar</button>
+<button onclick="addKm()">Adicionar KM</button>
 
 </div>
-
-
-<div class="controls">
-
-<button onclick="start()">INICIAR</button>
-
-<button onclick="stop()">PARAR</button>
-
-</div>
-
 
 <div class="controls">
 
@@ -158,160 +109,152 @@ Tempo
 
 </div>
 
+<div class="controls">
+
+<button onclick="start()">INICIAR</button>
+
+<button onclick="stop()">PARAR</button>
+
+</div>
+
+<div class="controls">
+
+<button onclick="ajustarOdometro()">AJUSTAR ODÔMETRO</button>
+
+</div>
 
 <script>
 
-/* CONFIGURAÇÃO */
-
 const OIL_LIMIT = 1500;
 
-
-/* RELÓGIO */
-
-setInterval(()=>{
-document.getElementById("clock").innerText =
-new Date().toLocaleTimeString("pt-BR")
-},1000)
-
-
-/* CARREGAR DADOS SALVOS */
-
-let totalKm = Number(localStorage.getItem("totalKm")) || 3184.1
-let tripA = Number(localStorage.getItem("tripA")) || 0
-let tripB = Number(localStorage.getItem("tripB")) || 0
-let oilBase = Number(localStorage.getItem("oilBase")) || 2683.1
-
-
-/* MOSTRAR */
+let totalKm = Number(localStorage.getItem("totalKm")) || 3348.9;
+let oilBase = Number(localStorage.getItem("oilBase")) || 2682;
 
 function updateDisplay(){
 
-document.getElementById("totalKm").innerText = totalKm.toFixed(1)
-document.getElementById("tripA").innerText = tripA.toFixed(1)
-document.getElementById("tripB").innerText = tripB.toFixed(1)
+document.getElementById("totalKm").innerText = totalKm.toFixed(1);
 
-updateOil()
+updateOil();
 
 }
-
-updateDisplay()
-
-
-/* ADICIONAR KM */
 
 function addKm(){
 
-let v = parseFloat(document.getElementById("kmInput").value)
+let v = parseFloat(document.getElementById("kmInput").value);
 
-if(!v || v<=0) return
+if(!v || v<=0) return;
 
-totalKm += v
-tripA += v
-tripB += v
+totalKm += v;
 
-localStorage.setItem("totalKm", totalKm)
-localStorage.setItem("tripA", tripA)
-localStorage.setItem("tripB", tripB)
+localStorage.setItem("totalKm", totalKm);
 
-document.getElementById("kmInput").value=""
+document.getElementById("kmInput").value="";
 
-updateDisplay()
+updateDisplay();
 
 }
-
-
-/* RESET TRIP */
-
-function resetTripA(){
-
-tripA = 0
-localStorage.setItem("tripA", tripA)
-updateDisplay()
-
-}
-
-function resetTripB(){
-
-tripB = 0
-localStorage.setItem("tripB", tripB)
-updateDisplay()
-
-}
-
-
-/* ÓLEO */
 
 function updateOil(){
 
-let restante = (oilBase + OIL_LIMIT) - totalKm
+let proximaTroca = oilBase + OIL_LIMIT;
 
-let txt=""
+let restante = proximaTroca - totalKm;
+
+if(restante < 0) restante = 0;
+
+let txt="";
+let cor="#00ff6a";
 
 if(restante <=0){
-txt = "⚠ TROCA DE ÓLEO ATRASADA"
+
+txt = "🔴 TROCAR ÓLEO AGORA";
+cor="#ff0000";
+
 }
 else if(restante <=300){
-txt = "⚠ Troca de óleo próxima ("+restante.toFixed(0)+" km)"
+
+txt = "🟡 ATENÇÃO<br>Faltam: "+restante.toFixed(0)+" km";
+cor="#ffff00";
+
 }
 else{
-txt = "✔ Óleo OK ("+restante.toFixed(0)+" km restantes)"
-}
 
-document.getElementById("oilStatus").innerText = txt
+txt = "🟢 PODE RODAR TRANQUILO<br>Faltam: "+restante.toFixed(0)+" km";
 
 }
 
+document.getElementById("oilStatus").innerHTML = txt;
+document.getElementById("oilStatus").style.color = cor;
 
-/* TROCA ÓLEO */
+}
 
 function resetOil(){
 
-oilBase = totalKm
+oilBase = totalKm;
 
-localStorage.setItem("oilBase", oilBase)
+localStorage.setItem("oilBase", oilBase);
 
-alert("Óleo trocado!")
+alert("Troca de óleo registrada!");
 
-updateOil()
+updateDisplay();
 
 }
 
-
-/* TEMPO */
-
-let sec=0
-let timer=null
+let sec=0;
+let timer=null;
 
 function start(){
 
-if(timer) return
+if(timer) return;
 
 timer=setInterval(()=>{
 
-sec++
+sec++;
 
-let m = Math.floor(sec/60)
-let s = sec%60
+let m = Math.floor(sec/60);
+let s = sec%60;
 
 document.getElementById("time").innerText =
-String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")
+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
 
-},1000)
+},1000);
 
 }
 
 function stop(){
 
-clearInterval(timer)
-timer=null
+clearInterval(timer);
+timer=null;
 
 }
 
+function ajustarOdometro(){
+
+let novo = prompt("Digite o novo valor do odômetro", totalKm);
+
+if(novo && !isNaN(novo)){
+
+totalKm = Number(novo);
+
+localStorage.setItem("totalKm", totalKm);
+
+updateDisplay();
+
+}
+
+}
+
+setInterval(()=>{
+document.getElementById("clock").innerText =
+new Date().toLocaleTimeString("pt-BR")
+},1000);
+
+updateDisplay();
 
 /* REGISTRAR SERVICE WORKER */
 
 if("serviceWorker" in navigator){
-navigator.serviceWorker.register("sw.js")
+navigator.serviceWorker.register("sw.js");
 }
 
 </script>

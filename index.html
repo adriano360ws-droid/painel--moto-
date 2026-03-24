@@ -103,11 +103,11 @@ font-size:16px;
 <div id="barraInterna"></div>
 </div>
 
-<button onclick="resetOil()">Troquei o 贸leo</button>
-<button onclick="ajustarTroca()">Ajustar troca de 贸leo</button>
+<button onclick="resetOil()">Troquei o óleo</button>
+<button onclick="ajustarTroca()">Ajustar troca de óleo</button>
 </div>
 
-<div class="label">OD脭METRO TOTAL</div>
+<div class="label">ODÔMETRO TOTAL</div>
 <div class="odometro" id="totalKm">0</div>
 
 <div class="controls">
@@ -127,14 +127,14 @@ Tempo
 </div>
 
 <div class="controls">
-<button onclick="ajustarOdometro()">Ajustar od么metro</button>
+<button onclick="ajustarOdometro()">Ajustar odômetro</button>
 </div>
 
 <script>
 
 const OIL_LIMIT = 1500;
 
-// Inicializa莽茫o segura
+// Inicialização segura
 if(!localStorage.getItem("totalKm")){
   localStorage.setItem("totalKm", 4367.9);
 }
@@ -176,23 +176,23 @@ let txt="";
 let cor="#00ff6a";
 
 if(restante <=0){
-txt = "馃敶 TROCAR 脫LEO AGORA";
+txt = "🔴 TROCAR ÓLEO AGORA";
 cor="#ff0000";
 }
 else if(restante <=300){
-txt = "馃煛 ATEN脟脙O<br>Faltam: <b>"+Math.ceil(restante)+" km</b>";
+txt = "🟡 ATENÇÃO<br>Faltam: <b>"+Math.ceil(restante)+" km</b>";
 cor="#ffff00";
 }
 else{
-txt = "馃煝 PODE RODAR TRANQUILO<br>Faltam: <b>"+Math.ceil(restante)+" km</b>";
+txt = "🟢 PODE RODAR TRANQUILO<br>Faltam: <b>"+Math.ceil(restante)+" km</b>";
 }
 
 document.getElementById("oilStatus").innerHTML = txt;
 document.getElementById("oilStatus").style.color = cor;
 
 document.getElementById("oilInfo").innerHTML =
-"脷ltima troca: "+oilBase.toFixed(1)+" km<br>"+
-"Pr贸xima troca: "+proximaTroca.toFixed(1)+" km";
+"Última troca: "+oilBase.toFixed(1)+" km<br>"+
+"Próxima troca: "+proximaTroca.toFixed(1)+" km";
 
 document.getElementById("barraInterna").style.width = porcentagem + "%";
 document.getElementById("barraInterna").style.background = cor;
@@ -201,13 +201,12 @@ document.getElementById("barraInterna").style.background = cor;
 function resetOil(){
 oilBase = totalKm;
 localStorage.setItem("oilBase", oilBase);
-alert("Troca de 贸leo registrada!");
+alert("Troca de óleo registrada!");
 updateDisplay();
 }
 
-// 馃敟 NOVA FUN脟脙O (AQUI EST脕 O SEGREDO)
 function ajustarTroca(){
-let novo = prompt("Digite o KM da 煤ltima troca de 贸leo", oilBase);
+let novo = prompt("Digite o KM da última troca de óleo", oilBase);
 
 if(novo && !isNaN(novo)){
 oilBase = Number(novo);
@@ -239,7 +238,7 @@ timer=null;
 }
 
 function ajustarOdometro(){
-let novo = prompt("Digite o novo valor do od么metro", totalKm);
+let novo = prompt("Digite o novo valor do odômetro", totalKm);
 
 if(novo && !isNaN(novo)){
 totalKm = Number(novo);

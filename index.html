@@ -13,7 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-
 body{
 margin:0;
 background:black;
@@ -22,9 +21,7 @@ font-family:Orbitron;
 text-align:center;
 }
 
-.top{
-padding:10px;
-}
+.top{padding:10px;}
 
 #clock{
 color:#00ff6a;
@@ -35,6 +32,28 @@ margin-bottom:10px;
 #oilStatus{
 font-size:22px;
 margin-bottom:5px;
+}
+
+#oilInfo{
+font-size:14px;
+color:#aaa;
+margin-bottom:10px;
+}
+
+#barra{
+width:80%;
+height:10px;
+background:#222;
+margin:10px auto;
+border-radius:5px;
+overflow:hidden;
+}
+
+#barraInterna{
+height:100%;
+width:100%;
+background:#00ff6a;
+transition:0.3s;
 }
 
 .odometro{
@@ -50,7 +69,6 @@ font-size:18px;
 .controls{
 margin-top:25px;
 }
-
 button{
 background:black;
 color:white;
@@ -70,7 +88,6 @@ width:120px;
 text-align:center;
 font-size:16px;
 }
-
 </style>
 
 </head>
@@ -78,139 +95,135 @@ font-size:16px;
 <body>
 
 <div class="top">
-
 <div id="clock"></div>
-
 <div id="oilStatus"></div>
+<div id="oilInfo"></div>
 
-<button onclick="resetOil()">Troquei o óleo</button>
-
+<div id="barra">
+<div id="barraInterna"></div>
 </div>
 
-<div class="label">ODÔMETRO TOTAL</div>
+<button onclick="resetOil()">Troquei o 贸leo</button>
+<button onclick="ajustarTroca()">Ajustar troca de 贸leo</button>
+</div>
 
+<div class="label">OD脭METRO TOTAL</div>
 <div class="odometro" id="totalKm">0</div>
 
 <div class="controls">
-
 <input id="kmInput" type="number" step="0.1" placeholder="Ex: 7.4">
-
 <br><br>
-
 <button onclick="addKm()">Adicionar KM</button>
-
 </div>
 
 <div class="controls">
-
 Tempo
-
 <div id="time">00:00</div>
-
 </div>
 
 <div class="controls">
-
 <button onclick="start()">INICIAR</button>
-
 <button onclick="stop()">PARAR</button>
-
 </div>
 
 <div class="controls">
-
-<button onclick="ajustarOdometro()">AJUSTAR ODÔMETRO</button>
-
+<button onclick="ajustarOdometro()">Ajustar od么metro</button>
 </div>
 
 <script>
 
 const OIL_LIMIT = 1500;
 
-let totalKm = Number(localStorage.getItem("totalKm")) || 3348.9;
-let oilBase = Number(localStorage.getItem("oilBase")) || 2682;
+// Inicializa莽茫o segura
+if(!localStorage.getItem("totalKm")){
+  localStorage.setItem("totalKm", 4367.9);
+}
+if(!localStorage.getItem("oilBase")){
+  localStorage.setItem("oilBase", 2682);
+}
+
+let totalKm = Number(localStorage.getItem("totalKm"));
+let oilBase = Number(localStorage.getItem("oilBase"));
 
 function updateDisplay(){
-
 document.getElementById("totalKm").innerText = totalKm.toFixed(1);
-
 updateOil();
-
 }
 
 function addKm(){
-
 let v = parseFloat(document.getElementById("kmInput").value);
-
 if(!v || v<=0) return;
 
 totalKm += v;
-
 localStorage.setItem("totalKm", totalKm);
 
 document.getElementById("kmInput").value="";
-
 updateDisplay();
-
 }
 
 function updateOil(){
 
 let proximaTroca = oilBase + OIL_LIMIT;
-
 let restante = proximaTroca - totalKm;
 
-if(restante < 0) restante = 0;
+let rodado = Math.max(0, totalKm - oilBase);
+let porcentagem = 100 - (rodado / OIL_LIMIT * 100);
+
+if(porcentagem < 0) porcentagem = 0;
+if(porcentagem > 100) porcentagem = 100;
 
 let txt="";
 let cor="#00ff6a";
 
 if(restante <=0){
-
-txt = "🔴 TROCAR ÓLEO AGORA";
+txt = "馃敶 TROCAR 脫LEO AGORA";
 cor="#ff0000";
-
 }
 else if(restante <=300){
-
-txt = "🟡 ATENÇÃO<br>Faltam: "+restante.toFixed(0)+" km";
+txt = "馃煛 ATEN脟脙O<br>Faltam: <b>"+Math.ceil(restante)+" km</b>";
 cor="#ffff00";
-
 }
 else{
-
-txt = "🟢 PODE RODAR TRANQUILO<br>Faltam: "+restante.toFixed(0)+" km";
-
+txt = "馃煝 PODE RODAR TRANQUILO<br>Faltam: <b>"+Math.ceil(restante)+" km</b>";
 }
 
 document.getElementById("oilStatus").innerHTML = txt;
 document.getElementById("oilStatus").style.color = cor;
 
+document.getElementById("oilInfo").innerHTML =
+"脷ltima troca: "+oilBase.toFixed(1)+" km<br>"+
+"Pr贸xima troca: "+proximaTroca.toFixed(1)+" km";
+
+document.getElementById("barraInterna").style.width = porcentagem + "%";
+document.getElementById("barraInterna").style.background = cor;
 }
 
 function resetOil(){
-
 oilBase = totalKm;
-
 localStorage.setItem("oilBase", oilBase);
-
-alert("Troca de óleo registrada!");
-
+alert("Troca de 贸leo registrada!");
 updateDisplay();
+}
 
+// 馃敟 NOVA FUN脟脙O (AQUI EST脕 O SEGREDO)
+function ajustarTroca(){
+let novo = prompt("Digite o KM da 煤ltima troca de 贸leo", oilBase);
+
+if(novo && !isNaN(novo)){
+oilBase = Number(novo);
+localStorage.setItem("oilBase", oilBase);
+updateDisplay();
+}
 }
 
 let sec=0;
 let timer=null;
 
 function start(){
-
 if(timer) return;
 
 timer=setInterval(()=>{
-
 sec++;
-
 let m = Math.floor(sec/60);
 let s = sec%60;
 
@@ -218,30 +231,21 @@ document.getElementById("time").innerText =
 String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
 
 },1000);
-
 }
 
 function stop(){
-
 clearInterval(timer);
 timer=null;
-
 }
 
 function ajustarOdometro(){
-
-let novo = prompt("Digite o novo valor do odômetro", totalKm);
+let novo = prompt("Digite o novo valor do od么metro", totalKm);
 
 if(novo && !isNaN(novo)){
-
 totalKm = Number(novo);
-
 localStorage.setItem("totalKm", totalKm);
-
 updateDisplay();
-
 }
-
 }
 
 setInterval(()=>{
@@ -250,8 +254,6 @@ new Date().toLocaleTimeString("pt-BR")
 },1000);
 
 updateDisplay();
-
-/* REGISTRAR SERVICE WORKER */
 
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("sw.js");

@@ -107,7 +107,7 @@ font-size:16px;
 <button onclick="ajustarTroca()">Ajustar troca de óleo</button>
 </div>
 
-<div class="label">ODÔMETRO TOTAL</div>
+<div class="label"> ODÔMETRO TOTAL</div>
 <div class="odometro" id="totalKm">0</div>
 
 <div class="controls">
@@ -127,19 +127,26 @@ Tempo
 </div>
 
 <div class="controls">
-<button onclick="ajustarOdometro()">Ajustar odômetro</button>
+<button onclick="ajustarOdometro()"> Ajustar odômetro</button>
 </div>
 
 <script>
 
+
 const OIL_LIMIT = 1500;
 
-// Inicialização segura
+// 🔥 LIMPA dados antigos (EXECUTA UMA VEZ)
+if(!localStorage.getItem("versao")){
+  localStorage.clear();
+  localStorage.setItem("versao","2");
+}
+
+// 🔥 valores iniciais corretos
 if(!localStorage.getItem("totalKm")){
-  localStorage.setItem("totalKm", 4367.9);
+  localStorage.setItem("totalKm", 5628.7);
 }
 if(!localStorage.getItem("oilBase")){
-  localStorage.setItem("oilBase", 2682);
+  localStorage.setItem("oilBase", 5018.6);
 }
 
 let totalKm = Number(localStorage.getItem("totalKm"));
@@ -254,9 +261,11 @@ new Date().toLocaleTimeString("pt-BR")
 
 updateDisplay();
 
+// 🔥 força atualização do service worker
 if("serviceWorker" in navigator){
-navigator.serviceWorker.register("sw.js");
+navigator.serviceWorker.register("sw.js?v=3");
 }
+
 
 </script>
 

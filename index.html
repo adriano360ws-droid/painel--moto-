@@ -132,21 +132,21 @@ Tempo
 
 <script>
 
+// 🛢️ TROCA DE ÓLEO A CADA 1.300 KM
+const OIL_LIMIT = 1300;
 
-const OIL_LIMIT = 1500;
-
-// 🔥 LIMPA dados antigos (EXECUTA UMA VEZ)
+// 🧹 LIMPA dados antigos (EXECUTA UMA VEZ)
 if(!localStorage.getItem("versao")){
   localStorage.clear();
   localStorage.setItem("versao","2");
 }
 
-// 🔥 valores iniciais corretos
+// 🧮 VALORES INICIAIS CORRETOS
 if(!localStorage.getItem("totalKm")){
-  localStorage.setItem("totalKm", 5628.7);
+  localStorage.setItem("totalKm", 161.9);
 }
 if(!localStorage.getItem("oilBase")){
-  localStorage.setItem("oilBase", 5018.6);
+  localStorage.setItem("oilBase", 161.9);
 }
 
 let totalKm = Number(localStorage.getItem("totalKm"));
@@ -183,23 +183,23 @@ let txt="";
 let cor="#00ff6a";
 
 if(restante <=0){
-txt = "🔴 TROCAR ÓLEO AGORA";
+txt = "🛑 TROCAR ÓLEO AGORA";
 cor="#ff0000";
 }
 else if(restante <=300){
-txt = "🟡 ATENÇÃO<br>Faltam: <b>"+Math.ceil(restante)+" km</b>";
+txt = "⚠️ FALTAM <b>"+Math.ceil(restante)+" KM</b><br>PARA TROCAR";
 cor="#ffff00";
 }
 else{
-txt = "🟢 PODE RODAR TRANQUILO<br>Faltam: <b>"+Math.ceil(restante)+" km</b>";
+txt = "✅ FALTAM <b>"+Math.ceil(restante)+" KM</b><br>PODE RODAR";
 }
 
 document.getElementById("oilStatus").innerHTML = txt;
 document.getElementById("oilStatus").style.color = cor;
 
 document.getElementById("oilInfo").innerHTML =
-"Última troca: "+oilBase.toFixed(1)+" km<br>"+
-"Próxima troca: "+proximaTroca.toFixed(1)+" km";
+"Troca feita em: "+oilBase.toFixed(1)+" km<br>"+
+"Próxima em: "+proximaTroca.toFixed(1)+" km";
 
 document.getElementById("barraInterna").style.width = porcentagem + "%";
 document.getElementById("barraInterna").style.background = cor;
@@ -261,11 +261,10 @@ new Date().toLocaleTimeString("pt-BR")
 
 updateDisplay();
 
-// 🔥 força atualização do service worker
+// 🧩 força atualização do service worker
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("sw.js?v=3");
 }
-
 
 </script>
 

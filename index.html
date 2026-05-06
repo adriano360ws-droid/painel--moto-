@@ -1,110 +1,37 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000000">
-
 <title>Painel Moto</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
-
 <style>
-body{
-margin:0;
-background:black;
-color:white;
-font-family:Orbitron;
-text-align:center;
-}
-
+body{margin:0;background:black;color:white;font-family:Orbitron;text-align:center;}
 .top{padding:10px;}
-
-#clock{
-color:#00ff6a;
-font-size:26px;
-margin-bottom:10px;
-}
-
-#oilStatus{
-font-size:22px;
-margin-bottom:5px;
-}
-
-#oilInfo{
-font-size:14px;
-color:#aaa;
-margin-bottom:10px;
-}
-
-#barra{
-width:80%;
-height:10px;
-background:#222;
-margin:10px auto;
-border-radius:5px;
-overflow:hidden;
-}
-
-#barraInterna{
-height:100%;
-width:100%;
-background:#00ff6a;
-transition:0.3s;
-}
-
-.odometro{
-font-size:80px;
-margin-top:10px;
-}
-
-.label{
-margin-top:20px;
-font-size:18px;
-}
-
-.controls{
-margin-top:25px;
-}
-button{
-background:black;
-color:white;
-border:1px solid white;
-padding:12px 20px;
-margin:5px;
-font-family:Orbitron;
-font-size:16px;
-}
-
-input{
-background:black;
-color:white;
-border:1px solid white;
-padding:10px;
-width:120px;
-text-align:center;
-font-size:16px;
-}
+#clock{color:#00ff6a;font-size:26px;margin-bottom:10px;}
+#oilStatus{font-size:22px;margin-bottom:5px;}
+#oilInfo{font-size:16px;color:#aaa;margin-bottom:10px;}
+#barra{width:80%;height:10px;background:#222;margin:10px auto;border-radius:5px;overflow:hidden;}
+#barraInterna{height:100%;width:100%;background:#00ff6a;transition:0.3s;}
+.odometro{font-size:80px;margin-top:10px;}
+.label{margin-top:20px;font-size:18px;}
+.controls{margin-top:25px;}
+button{background:black;color:white;border:1px solid white;padding:12px 20px;margin:5px;font-family:Orbitron;font-size:16px;}
+input{background:black;color:white;border:1px solid white;padding:10px;width:120px;text-align:center;font-size:16px;}
 </style>
-
 </head>
-
 <body>
 
 <div class="top">
 <div id="clock"></div>
 <div id="oilStatus"></div>
 <div id="oilInfo"></div>
+<div id="barra"><div id="barraInterna"></div></div>
 
-<div id="barra">
-<div id="barraInterna"></div>
-</div>
-
-<button onclick="resetOil()">Troquei o óleo</button>
-<button onclick="ajustarTroca()">Ajustar troca de óleo</button>
+<button onclick="resetOil()">✅ TROQUEI O ÓLEO (ZERAR)</button>
+<button onclick="ajustarTroca()">Ajustar Troca</button>
 </div>
 
 <div class="label"> ODÔMETRO TOTAL</div>
@@ -113,12 +40,11 @@ font-size:16px;
 <div class="controls">
 <input id="kmInput" type="number" step="0.1" placeholder="Ex: 7.4">
 <br><br>
-<button onclick="addKm()">Adicionar KM</button>
+<button onclick="addKm()">Adicionar KM RODADO</button>
 </div>
 
 <div class="controls">
-Tempo
-<div id="time">00:00</div>
+Tempo<div id="time">00:00</div>
 </div>
 
 <div class="controls">
@@ -127,144 +53,94 @@ Tempo
 </div>
 
 <div class="controls">
-<button onclick="ajustarOdometro()"> Ajustar odômetro</button>
+<button onclick="ajustarOdometro()">Ajustar Odômetro</button>
 </div>
 
 <script>
 
-// 🛢️ TROCA DE ÓLEO A CADA 1.300 KM
-const OIL_LIMIT = 1300;
+// 🛢️ CONFIGURAÇÃO PRINCIPAL
+const LIMITE_TROCA = 1300; // Troca a cada 1.300km
 
-// 🧹 LIMPA dados antigos (EXECUTA UMA VEZ)
-if(!localStorage.getItem("versao")){
-  localStorage.clear();
-  localStorage.setItem("versao","2");
-}
+// 🧮 VALORES INICIAIS (NÃO ALTERE AQUI)
+let kmTotal = 161.9;       // Começa com 161,9km TOTAL
+let kmUltimaTroca = 161.9; // Começa com a troca feita AGORA
 
-// 🧮 VALORES INICIAIS CORRETOS
-if(!localStorage.getItem("totalKm")){
-  localStorage.setItem("totalKm", 161.9);
-}
-if(!localStorage.getItem("oilBase")){
-  localStorage.setItem("oilBase", 161.9);
-}
-
-let totalKm = Number(localStorage.getItem("totalKm"));
-let oilBase = Number(localStorage.getItem("oilBase"));
-
-function updateDisplay(){
-document.getElementById("totalKm").innerText = totalKm.toFixed(1);
-updateOil();
+function atualizarTela(){
+document.getElementById("totalKm").innerText = kmTotal.toFixed(1);
+atualizarContadorOleo();
 }
 
 function addKm(){
-let v = parseFloat(document.getElementById("kmInput").value);
-if(!v || v<=0) return;
-
-totalKm += v;
-localStorage.setItem("totalKm", totalKm);
-
+let valor = parseFloat(document.getElementById("kmInput").value);
+if(!valor || valor <=0) return;
+kmTotal += valor;
 document.getElementById("kmInput").value="";
-updateDisplay();
+atualizarTela();
 }
 
-function updateOil(){
+function atualizarContadorOleo(){
+let kmRodadoDesdeTroca = kmTotal - kmUltimaTroca;
+let kmFaltam = LIMITE_TROCA - kmRodadoDesdeTroca;
 
-let proximaTroca = oilBase + OIL_LIMIT;
-let restante = proximaTroca - totalKm;
+let porcentagem = (kmRodadoDesdeTroca / LIMITE_TROCA) * 100;
+if(porcentagem <0) porcentagem=0;
+if(porcentagem>100) porcentagem=100;
 
-let rodado = Math.max(0, totalKm - oilBase);
-let porcentagem = 100 - (rodado / OIL_LIMIT * 100);
+let texto = ""; let cor = "#00ff6a";
 
-if(porcentagem < 0) porcentagem = 0;
-if(porcentagem > 100) porcentagem = 100;
-
-let txt="";
-let cor="#00ff6a";
-
-if(restante <=0){
-txt = "🛑 TROCAR ÓLEO AGORA";
-cor="#ff0000";
+if(kmFaltam <=0){
+texto = "🛑 TROCAR ÓLEO AGORA"; cor="#ff0000";
 }
-else if(restante <=300){
-txt = "⚠️ FALTAM <b>"+Math.ceil(restante)+" KM</b><br>PARA TROCAR";
-cor="#ffff00";
+else if(kmFaltam <=300){
+texto = "⚠️ FALTAM "+Math.ceil(kmFaltam)+" KM"; cor="#ffff00";
 }
 else{
-txt = "✅ FALTAM <b>"+Math.ceil(restante)+" KM</b><br>PODE RODAR";
+texto = "✅ PODE RODAR TRANQUILO";
 }
 
-document.getElementById("oilStatus").innerHTML = txt;
+document.getElementById("oilStatus").innerHTML = texto;
 document.getElementById("oilStatus").style.color = cor;
 
-document.getElementById("oilInfo").innerHTML =
-"Troca feita em: "+oilBase.toFixed(1)+" km<br>"+
-"Próxima em: "+proximaTroca.toFixed(1)+" km";
+document.getElementById("oilInfo").innerHTML = 
+"🟢 RODADOS: <b>"+kmRodadoDesdeTroca.toFixed(1)+" KM</b> (Desde troca)<br>"+
+"🔴 FALTAM: <b>"+Math.ceil(kmFaltam)+" KM</b> para 1.300";
 
 document.getElementById("barraInterna").style.width = porcentagem + "%";
 document.getElementById("barraInterna").style.background = cor;
 }
 
+// ✅ FUNÇÃO DE ZERAR QUANDO TROCAR ÓLEO
 function resetOil(){
-oilBase = totalKm;
-localStorage.setItem("oilBase", oilBase);
-alert("Troca de óleo registrada!");
-updateDisplay();
+kmUltimaTroca = kmTotal;
+alert("✅ CONTAGEM ZERADA! Nova contagem iniciada.");
+atualizarTela();
 }
 
 function ajustarTroca(){
-let novo = prompt("Digite o KM da última troca de óleo", oilBase);
-
+let novo = prompt("KM da ÚLTIMA TROCA:", kmUltimaTroca);
 if(novo && !isNaN(novo)){
-oilBase = Number(novo);
-localStorage.setItem("oilBase", oilBase);
-updateDisplay();
+kmUltimaTroca = Number(novo);
+atualizarTela();
 }
 }
 
-let sec=0;
-let timer=null;
-
-function start(){
-if(timer) return;
-
-timer=setInterval(()=>{
-sec++;
-let m = Math.floor(sec/60);
-let s = sec%60;
-
-document.getElementById("time").innerText =
-String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
-
-},1000);
-}
-
-function stop(){
-clearInterval(timer);
-timer=null;
-}
+// ⏱️ CRONÔMETRO
+let seg=0; let cronometro=null;
+function start(){if(cronometro) return;cronometro=setInterval(()=>{seg++;let m=Math.floor(seg/60);let s=seg%60;document.getElementById("time").innerText=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");},1000);}
+function stop(){clearInterval(cronometro);cronometro=null;}
 
 function ajustarOdometro(){
-let novo = prompt("Digite o novo valor do odômetro", totalKm);
-
+let novo = prompt("KM ATUAL DA MOTO:", kmTotal);
 if(novo && !isNaN(novo)){
-totalKm = Number(novo);
-localStorage.setItem("totalKm", totalKm);
-updateDisplay();
+kmTotal = Number(novo);
+atualizarTela();
 }
 }
 
-setInterval(()=>{
-document.getElementById("clock").innerText =
-new Date().toLocaleTimeString("pt-BR")
-},1000);
+setInterval(()=>{document.getElementById("clock").innerText=new Date().toLocaleTimeString("pt-BR")},1000);
 
-updateDisplay();
-
-// 🧩 força atualização do service worker
-if("serviceWorker" in navigator){
-navigator.serviceWorker.register("sw.js?v=3");
-}
+// 🚀 INICIALIZAÇÃO
+atualizarTela();
 
 </script>
 
